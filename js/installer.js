@@ -285,6 +285,29 @@ const Installer = (() => {
   }
 
   // Scan all plugin directories on disk and return their manifest info
+  // Check if a manifest.json belongs to an Eagle plugin (not a random npm/node project)
+  function isEagleManifest(manifest) {
+    // Eagle plugins must have: id (string), name (string), and a main config object
+    if (!manifest || typeof manifest !== 'object') return false;
+    if (typeof manifest.id !== 'string' || manifest.id.length === 0) return false;
+    if (typeof manifest.name !== 'string' || manifest.name.length === 0) return false;
+
+    // Eagle plugin IDs are alphanumeric (e.g. "LB5UL2P0Q9FFF"), not UUIDs or npm-style
+    if (!/^[A-Za-z0-9_-]+$/.test(manifest.id)) return false;
+
+    // Must have a main config for one of the 4 plugin types:
+    // Window: main.url, Service: main.background, Format: main.thumbnail/preview, Inspector: main.inspector
+    if (!manifest.main || typeof manifest.main !== 'object') return false;
+
+    const main = manifest.main;
+    const hasWindow = typeof main.url === 'string';
+    const hasService = typeof main.background === 'string';
+    const hasFormat = typeof main.thumbnail === 'string' || typeof main.preview === 'string';
+    const hasInspector = typeof main.inspector === 'string';
+
+    return hasWindow || hasService || hasFormat || hasInspector;
+  }
+
   function scanInstalledPlugins() {
     const discovered = [];
 
@@ -303,7 +326,7 @@ const Installer = (() => {
 
       try {
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-        if (!manifest.id || !manifest.name) continue;
+        if (!isEagleManifest(manifest)) continue;
 
         const isDisabled = entry.endsWith('.disabled');
         const dirName = isDisabled ? entry.replace(/\.disabled$/, '') : entry;
