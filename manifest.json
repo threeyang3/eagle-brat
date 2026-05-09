@@ -1,0 +1,16 @@
+{
+  "id": "EagleBRAT",
+  "version": "1.0.0",
+  "name": "BRAT",
+  "logo": "/logo.png",
+  "keywords": ["github", "plugin", "install", "update", "brat", "beta"],
+  "main": {
+    "url": "index.html",
+    "width": 800,
+    "height": 600,
+    "minWidth": 600,
+    "minHeight": 400,
+    "resizable": true,
+    "devTools": true
+  }
+}
